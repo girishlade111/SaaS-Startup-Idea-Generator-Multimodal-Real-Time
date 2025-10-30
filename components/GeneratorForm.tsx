@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState } from 'react';
 import type { FormState } from '../types';
@@ -11,7 +10,14 @@ interface GeneratorFormProps {
   onReset: () => void;
 }
 
-const InputField: React.FC<{ label: string; placeholder: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; isRequired?: boolean; }> = ({ label, placeholder, value, onChange, isRequired=false }) => (
+const InputField: React.FC<{ 
+  label: string; 
+  placeholder: string; 
+  value: string; 
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; 
+  isRequired?: boolean;
+  hasError?: boolean;
+}> = ({ label, placeholder, value, onChange, isRequired = false, hasError = false }) => (
   <div>
     <label className="block text-sm font-medium text-neutral-300 mb-1.5">{label}{isRequired && <span className="text-red-400 ml-1">*</span>}</label>
     <input
@@ -20,7 +26,7 @@ const InputField: React.FC<{ label: string; placeholder: string; value: string; 
       value={value}
       onChange={onChange}
       required={isRequired}
-      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
+      className={`w-full bg-neutral-900 border rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 outline-none transition-all ${hasError ? 'border-red-500/60 ring-red-500/30' : 'border-neutral-700 focus:ring-brand focus:border-brand'}`}
     />
   </div>
 );
@@ -43,9 +49,26 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
   const [industry, setIndustry] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [errors, setErrors] = useState<{ searchQuery?: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { searchQuery?: string } = {};
+    if (!searchQuery.trim()) {
+      newErrors.searchQuery = 'Web Search Query is required to validate ideas.';
+    } else if (searchQuery.trim().length < 5) {
+      newErrors.searchQuery = 'Please enter a more descriptive query (min. 5 characters).';
+    }
+    return newErrors;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
     onSubmit({ textInput, videoFile, imageFile, industry, targetAudience, searchQuery });
   };
 
@@ -74,7 +97,23 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
         
         <InputField label="Industry" placeholder="e.g., E-commerce, DevOps" value={industry} onChange={(e) => setIndustry(e.target.value)} />
         <InputField label="Target Audience" placeholder="e.g., Small businesses" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} />
-        <InputField label="Web Search Query" placeholder="e.g., 'latest trends in devtools'" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} isRequired={true} />
+        
+        <div>
+          <InputField 
+            label="Web Search Query" 
+            placeholder="e.g., 'latest trends in devtools'" 
+            value={searchQuery} 
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (errors.searchQuery) {
+                setErrors(prev => ({ ...prev, searchQuery: undefined }));
+              }
+            }} 
+            isRequired={true}
+            hasError={!!errors.searchQuery}
+          />
+          {errors.searchQuery && <p className="text-red-400 text-xs mt-1.5 px-1">{errors.searchQuery}</p>}
+        </div>
 
 
         <div className="pt-4">

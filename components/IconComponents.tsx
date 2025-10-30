@@ -191,3 +191,33 @@ export const BookmarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
     <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
   </svg>
 );
+
+export const DollarSignIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="12" y1="2" x2="12" y2="22" />
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </svg>
+);
+
+export const RocketIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.3.05-3.12-.67-.82-2.32-1.42-3.1-1.92s-.86-2.32-1.94-3.1c-1.08-.78-2.32-1.26-3.1-1.92-.78-.66-.5-2.32.05-3.12C2.8 5.6 2.8 4.08 2.25 3.38 1.7 2.68.5 3.5.5 5.5c0 2 1.5 2.5 3 2.5h1.5l1.5-1.5.5-3.5-3-3C2 2.5.5 4 .5 5.5"/>
+    <path d="m12.5 11.5 11 11"/>
+    <path d="m22 2-7.5 7.5"/>
+  </svg>
+);
+
+export const ShieldAlertIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M12 8v4" />
+    <path d="M12 16h.01" />
+  </svg>
+);
+
+export const BriefcaseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+);

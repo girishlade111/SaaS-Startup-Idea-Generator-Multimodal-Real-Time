@@ -50,10 +50,22 @@ const ideaSchema = {
       items: { type: Type.STRING },
       description: "A list of key steps to launch the product."
     },
+    potentialRisks: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          risk: { type: Type.STRING, description: "A potential business or technical risk." },
+          mitigation: { type: Type.STRING, description: "A strategy to mitigate the identified risk." }
+        },
+        required: ['risk', 'mitigation']
+      },
+      description: "A list of 1-2 potential risks and how to mitigate them."
+    },
   },
    required: [
     'name', 'tagline', 'description', 'targetProblem', 'marketSize', 'coreFeatures', 'techStack',
-    'revenueModel', 'pricingStrategy', 'competitiveLandscape', 'feasibilityScore', 'marketValidationScore', 'launchStrategy'
+    'revenueModel', 'pricingStrategy', 'competitiveLandscape', 'feasibilityScore', 'marketValidationScore', 'launchStrategy', 'potentialRisks'
   ]
 };
 
@@ -73,7 +85,12 @@ export const geminiService = {
       For each idea, provide a detailed breakdown.
       Ensure the 'marketValidationScore' and 'feasibilityScore' are realistically informed by the search results.
       For the 'competitiveLandscape', analyze 1-2 key competitors found via search. For each competitor, provide their pricing model (e.g., '$29/mo', 'Freemium'), estimated market share if available, and a list of their key differentiators. This information should directly inform the analysis.
-      
+      For 'potentialRisks', identify 1-2 potential risks (e.g., market adoption, technical challenges, competition) and suggest a corresponding mitigation strategy for each.
+      Finally, suggest a funding strategy:
+      - fundingStage: Suggest a suitable funding stage for this type of company (e.g., 'Pre-seed', 'Seed', 'Bootstrapped').
+      - fundingRaised: Estimate a typical funding amount for this stage, or state 'N/A' if bootstrapped (e.g., '$500k', '$2M', 'N/A').
+      - keyInvestors: List 2-3 types of ideal investors or notable firms in this space (e.g., 'SaaS-focused VCs', 'Angel investors in FinTech', 'Y Combinator').
+
       Your final response must be a single JSON array containing the 2 idea objects, enclosed in a markdown code block like so:
       \`\`\`json
       [

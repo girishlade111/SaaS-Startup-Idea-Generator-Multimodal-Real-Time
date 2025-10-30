@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Idea } from '../types';
-import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon } from './IconComponents';
+import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, Wand2Icon, TwitterIcon, LinkedinIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon } from './IconComponents';
 
 const ScoreBar: React.FC<{ score: number; max: number; label: string; color: string }> = ({ score, max, label, color }) => (
   <div>
@@ -42,46 +42,17 @@ const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.
   </div>
 );
 
-interface IdeaCardProps {
+interface DashboardIdeaCardProps {
   idea: Idea;
   onGenerateLogo: (ideaId: string, prompt?: string) => void;
   isLogoLoading: boolean;
-  onSave?: (idea: Idea) => void;
-  isSaved?: boolean;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading, onSave, isSaved }) => {
-  const [rating, setRating] = useState<'up' | 'down' | null>(null);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+export const DashboardIdeaCard: React.FC<DashboardIdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading }) => {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratePrompt, setRegeneratePrompt] = useState('');
 
-  const feedbackStorageKey = `feedback_${idea.id}`;
   const hasGeneratedLogo = idea.logoIdeaUrl && idea.logoIdeaUrl.startsWith('data:image');
-
-  useEffect(() => {
-    const savedFeedback = localStorage.getItem(feedbackStorageKey);
-    if (savedFeedback) {
-      setIsSubmitted(true);
-    }
-  }, [feedbackStorageKey]);
-
-  const handleRating = (newRating: 'up' | 'down') => {
-    setRating(currentRating => currentRating === newRating ? null : newRating);
-  };
-
-  const handleSubmit = () => {
-    if (!rating) return;
-    
-    const feedbackData = {
-      rating,
-      text: feedbackText,
-    };
-    
-    localStorage.setItem(feedbackStorageKey, JSON.stringify(feedbackData));
-    setIsSubmitted(true);
-  };
 
   const handleRegenerateSubmit = () => {
     onGenerateLogo(idea.id, regeneratePrompt);
@@ -98,7 +69,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
     if (platform === 'twitter') {
       url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(appUrl)}`;
     } else if (platform === 'linkedin') {
-      // Using the older shareArticle syntax for better compatibility
       url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(appUrl)}&title=${encodeURIComponent(`AI SaaS Idea: ${idea.name}`)}&summary=${encodeURIComponent(text)}`;
     }
 
@@ -189,17 +159,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
           <ActionButton onClick={() => handleShare('linkedin')} aria-label="Share on LinkedIn">
             <LinkedinIcon className="w-4 h-4 text-neutral-300" />
           </ActionButton>
-           {onSave && (
-            isSaved ? (
-              <ActionButton aria-label="Idea saved" disabled>
-                <CheckIcon className="w-4 h-4 text-green-400" />
-              </ActionButton>
-            ) : (
-              <ActionButton onClick={() => onSave(idea)} aria-label="Save idea">
-                <BookmarkIcon className="w-4 h-4 text-neutral-300" />
-              </ActionButton>
-            )
-          )}
           <ActionButton aria-label="Download idea">
             <DownloadIcon className="w-4 h-4 text-neutral-300" />
           </ActionButton>
@@ -260,7 +219,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
             </div>
           </Section>
       </div>
-      
+
       <div className="mt-6">
         <Section
             title="Funding & Investment"
@@ -284,7 +243,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
             </div>
         </Section>
       </div>
-
+      
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <Section 
           title="Core Features" 
@@ -304,11 +263,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
               comp && <div key={comp.player} className="bg-neutral-800/30 p-3 rounded-lg border border-neutral-700/50">
                 <h5 className="font-semibold text-neutral-200 text-sm">{comp.player}</h5>
                 
-                {/* Details section, shown only if there's content */}
                 {(comp.pricing || comp.marketShare || (comp.keyDifferentiators && comp.keyDifferentiators.length > 0)) && (
                   <div className="mt-2 border-t border-neutral-700/50 pt-2 space-y-3">
                     
-                    {/* Pricing and Market Share */}
                     {(comp.pricing || comp.marketShare) && (
                       <div>
                         <div className="flex flex-col gap-1">
@@ -326,7 +283,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
                       </div>
                     )}
                     
-                    {/* Key Differentiators Sub-section */}
                     {comp.keyDifferentiators && comp.keyDifferentiators.length > 0 && (
                       <div>
                         <h6 className="text-xs font-semibold text-neutral-300 mb-1">Key Differentiators:</h6>
@@ -347,56 +303,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
           </div>
         </Section>
       </div>
-      
-      <div className="mt-6 pt-6 border-t border-neutral-800/60">
-        {isSubmitted ? (
-          <div className="text-center p-4 bg-neutral-800/40 rounded-lg">
-            <h5 className="font-semibold text-green-400">Thank you for your feedback!</h5>
-            <p className="text-sm text-neutral-400 mt-1">Your insights help us improve the AI.</p>
-          </div>
-        ) : (
-          <div>
-            <h4 className="font-semibold text-neutral-200 text-sm text-center mb-4">Was this idea helpful?</h4>
-            <div className="flex justify-center items-center gap-4">
-              <button
-                onClick={() => handleRating('up')}
-                className={`p-3 rounded-full transition-all duration-200 border ${rating === 'up' ? 'bg-green-500/20 border-green-500 text-green-400 scale-110' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
-                aria-pressed={rating === 'up'}
-                aria-label="Good idea"
-              >
-                <ThumbsUpIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleRating('down')}
-                className={`p-3 rounded-full transition-all duration-200 border ${rating === 'down' ? 'bg-red-500/20 border-red-500 text-red-400 scale-110' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
-                aria-pressed={rating === 'down'}
-                aria-label="Bad idea"
-              >
-                <ThumbsDownIcon className="w-5 h-5" />
-              </button>
-            </div>
-            
-            {rating && (
-              <div className="mt-4 animate-[fadeIn_0.5s_ease-in-out]">
-                <textarea
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  placeholder="Optional: Tell us more..."
-                  rows={3}
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
-                ></textarea>
-                <button
-                  onClick={handleSubmit}
-                  className="w-full mt-2 bg-brand text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  Submit Feedback
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
     </div>
   );
 };

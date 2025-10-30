@@ -1,5 +1,5 @@
 import React from 'react';
-import { IdeaCard } from './IdeaCard';
+import { DashboardIdeaCard } from './DashboardIdeaCard';
 import { geminiService } from '../services/geminiService';
 import type { Idea } from '../types';
 
@@ -55,7 +55,7 @@ export const DashboardPage: React.FC = () => {
       ) : savedIdeas.length > 0 ? (
         <div className="space-y-6">
           {savedIdeas.map(idea => (
-            <IdeaCard 
+            <DashboardIdeaCard 
               key={idea.id} 
               idea={idea} 
               onGenerateLogo={handleGenerateLogo}

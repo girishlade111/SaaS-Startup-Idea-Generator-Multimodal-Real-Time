@@ -19,10 +19,6 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('generator');
 
   const handleGenerateIdeas = useCallback(async (formData: FormState) => {
-    if (!formData.searchQuery) {
-      setError("Web Search Query is required to validate ideas.");
-      return;
-    }
     setLastFormData(formData);
     setIsLoading(true);
     setError(null);

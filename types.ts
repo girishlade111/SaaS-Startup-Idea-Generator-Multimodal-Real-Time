@@ -1,4 +1,3 @@
-
 export interface Idea {
   id: string;
   name: string;
@@ -20,6 +19,13 @@ export interface Idea {
   marketValidationScore: number;
   launchStrategy: string[];
   logoIdeaUrl?: string;
+  potentialRisks: {
+    risk: string;
+    mitigation: string;
+  }[];
+  fundingStage: string;
+  fundingRaised: string;
+  keyInvestors: string[];
 }
 
 export interface FormState {
