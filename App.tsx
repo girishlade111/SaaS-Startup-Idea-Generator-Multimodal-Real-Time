@@ -1,9 +1,11 @@
+
 import React, { useState, useCallback } from 'react';
 import { Header } from './components/Header';
 import { GeneratorForm } from './components/GeneratorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { DashboardPage } from './components/DashboardPage';
 import { PricingPage } from './components/PricingPage';
+import { ChatWidget } from './components/ChatWidget';
 import { geminiService } from './services/geminiService';
 import type { Idea, FormState, Page, GroundingSource } from './types';
 import { SparklesIcon, InstagramIcon, LinkedinIcon, GithubIcon, CodepenIcon, MailIcon } from './components/IconComponents';
@@ -165,6 +167,8 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <ChatWidget />
     </div>
   );
 };

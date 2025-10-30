@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type } from "@google/genai";
+
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { Idea, FormState, GroundingSource } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -75,7 +76,8 @@ export const geminiService = {
     const prompt = `
       You are an expert SaaS startup consultant. Based on the following user inputs, generate 2 distinct and innovative SaaS startup ideas.
       Use the provided web search query to ground your ideas in real-time data, recent trends, and validate the market need.
-
+      ${formData.thinkingMode ? "Engage your deep analysis capabilities to provide exceptionally detailed, insightful, and strategic outputs. Think step-by-step to formulate the best possible response." : ""}
+      
       User Inputs:
       - Core Idea/Problem: ${formData.textInput || 'Not provided'}
       - Industry: ${formData.industry || 'Any'}
@@ -101,15 +103,12 @@ export const geminiService = {
     `;
 
     try {
-      // FIX: Per @google/genai guidelines, `responseMimeType` and `responseSchema`
-      // are not allowed when using the `googleSearch` tool. The prompt has been
-      // updated to explicitly request JSON output in a code block, and logic is
-      // added below to extract it.
       const response = await ai.models.generateContent({
         model: "gemini-2.5-pro",
         contents: prompt,
         config: {
           tools: [{googleSearch: {}}],
+          ...(formData.thinkingMode && { thinkingConfig: { thinkingBudget: 32768 } }),
         },
       });
 
@@ -167,6 +166,31 @@ export const geminiService = {
     } catch (error) {
       console.error("Error calling Imagen API:", error);
       throw new Error("Failed to generate a logo from the AI model.");
+    }
+  },
+
+  generateSpeech: async (text: string): Promise<string> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: `Say: ${text}` }] }],
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
+                    },
+                },
+            },
+        });
+        const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!base64Audio) {
+            throw new Error("The API did not return any audio data.");
+        }
+        return base64Audio;
+    } catch (error) {
+        console.error("Error calling TTS API:", error);
+        throw new Error("Failed to generate speech from the AI model.");
     }
   },
 };

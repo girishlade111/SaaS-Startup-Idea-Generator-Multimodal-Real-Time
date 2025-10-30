@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { useState } from 'react';
 import type { FormState } from '../types';
-import { SparklesIcon, VideoIcon, ImageIcon, RefreshCwIcon } from './IconComponents';
+import { SparklesIcon, VideoIcon, ImageIcon, RefreshCwIcon, BrainCircuitIcon } from './IconComponents';
 
 interface GeneratorFormProps {
   onSubmit: (formData: FormState) => void;
@@ -49,6 +50,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
   const [industry, setIndustry] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [thinkingMode, setThinkingMode] = useState(false);
   const [errors, setErrors] = useState<{ searchQuery?: string }>({});
 
   const validateForm = () => {
@@ -69,7 +71,7 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
       return;
     }
     setErrors({});
-    onSubmit({ textInput, videoFile, imageFile, industry, targetAudience, searchQuery });
+    onSubmit({ textInput, videoFile, imageFile, industry, targetAudience, searchQuery, thinkingMode });
   };
 
   return (
@@ -114,9 +116,32 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
           />
           {errors.searchQuery && <p className="text-red-400 text-xs mt-1.5 px-1">{errors.searchQuery}</p>}
         </div>
+        
+        <div className="pt-2">
+            <label htmlFor="thinking-mode-toggle" className="flex items-center justify-between cursor-pointer bg-neutral-900 border border-neutral-700 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <BrainCircuitIcon className="w-5 h-5 text-brand-light" />
+                  <div>
+                    <span className="font-semibold text-neutral-200 text-sm">Thinking Mode</span>
+                    <p className="text-xs text-neutral-400">Deeper analysis for complex ideas. (Slower)</p>
+                  </div>
+                </div>
+                <div className="relative">
+                    <input 
+                        type="checkbox" 
+                        id="thinking-mode-toggle" 
+                        className="sr-only" 
+                        checked={thinkingMode}
+                        onChange={() => setThinkingMode(!thinkingMode)}
+                    />
+                    <div className="block bg-neutral-700 w-12 h-6 rounded-full"></div>
+                    <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${thinkingMode ? 'transform translate-x-6 bg-brand-light' : ''}`}></div>
+                </div>
+            </label>
+        </div>
 
 
-        <div className="pt-4">
+        <div className="pt-2">
           {isGenerated ? (
              <button
                 type="button"

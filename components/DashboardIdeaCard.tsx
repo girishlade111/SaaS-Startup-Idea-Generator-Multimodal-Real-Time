@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import type { Idea } from '../types';
-import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, Wand2Icon, TwitterIcon, LinkedinIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon } from './IconComponents';
+import { geminiService } from '../services/geminiService';
+import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, Wand2Icon, TwitterIcon, LinkedinIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon, Volume2Icon, VolumeXIcon } from './IconComponents';
 
 const ScoreBar: React.FC<{ score: number; max: number; label: string; color: string }> = ({ score, max, label, color }) => (
   <div>
@@ -42,6 +44,37 @@ const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.
   </div>
 );
 
+// --- Audio Utility Functions ---
+function decode(base64: string) {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+}
+
+async function decodeAudioData(
+    data: Uint8Array,
+    ctx: AudioContext,
+    sampleRate: number,
+    numChannels: number,
+): Promise<AudioBuffer> {
+    const dataInt16 = new Int16Array(data.buffer);
+    const frameCount = dataInt16.length / numChannels;
+    const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+    for (let channel = 0; channel < numChannels; channel++) {
+        const channelData = buffer.getChannelData(channel);
+        for (let i = 0; i < frameCount; i++) {
+            channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+        }
+    }
+    return buffer;
+}
+
+
 interface DashboardIdeaCardProps {
   idea: Idea;
   onGenerateLogo: (ideaId: string, prompt?: string) => void;
@@ -51,8 +84,64 @@ interface DashboardIdeaCardProps {
 export const DashboardIdeaCard: React.FC<DashboardIdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading }) => {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regeneratePrompt, setRegeneratePrompt] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const hasGeneratedLogo = idea.logoIdeaUrl && idea.logoIdeaUrl.startsWith('data:image');
+  
+    const stopAudio = () => {
+    if (audioSourceRef.current) {
+        audioSourceRef.current.stop();
+        audioSourceRef.current.disconnect();
+        audioSourceRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+  
+    const handleReadAloud = async () => {
+    if (isSpeaking) {
+        stopAudio();
+        return;
+    }
+
+    try {
+        setIsSpeaking(true);
+        const textToRead = `SaaS Idea: ${idea.name}. Tagline: ${idea.tagline}. Description: ${idea.description}`;
+        const base64Audio = await geminiService.generateSpeech(textToRead);
+
+        if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+            // FIX: Cast window to any to access vendor-prefixed webkitAudioContext for broader browser support.
+            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+        }
+        const audioContext = audioContextRef.current;
+        
+        const audioBuffer = await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.onended = () => {
+            setIsSpeaking(false);
+            audioSourceRef.current = null;
+        };
+        source.start();
+        audioSourceRef.current = source;
+    } catch (error) {
+        console.error("Failed to play audio:", error);
+        setIsSpeaking(false);
+    }
+  };
+  
+   useEffect(() => {
+    // Cleanup audio on component unmount
+    return () => {
+        stopAudio();
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close();
+        }
+    };
+  }, []);
+
 
   const handleRegenerateSubmit = () => {
     onGenerateLogo(idea.id, regeneratePrompt);
@@ -153,6 +242,9 @@ export const DashboardIdeaCard: React.FC<DashboardIdeaCardProps> = ({ idea, onGe
           </div>
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
+           <ActionButton onClick={handleReadAloud} aria-label={isSpeaking ? "Stop reading" : "Read aloud"}>
+            {isSpeaking ? <VolumeXIcon className="w-4 h-4 text-red-400" /> : <Volume2Icon className="w-4 h-4 text-neutral-300" />}
+          </ActionButton>
           <ActionButton onClick={() => handleShare('twitter')} aria-label="Share on Twitter">
             <TwitterIcon className="w-4 h-4 text-neutral-300" />
           </ActionButton>

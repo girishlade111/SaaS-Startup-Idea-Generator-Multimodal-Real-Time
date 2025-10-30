@@ -1,3 +1,4 @@
+
 # AI SaaS Idea Generator
 
 > **Fuse your vision with real-time market data to generate, validate, and refine your next big SaaS idea using multimodal AI.**
@@ -16,13 +17,17 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
 *   **📊 Data-Driven, Not Guesswork**: Every idea is grounded in **real-time Google Search data**. This means your concepts are relevant *today*, not based on stale training data.
 *   **🚀 Accelerate Your Workflow**: Save countless hours of manual research on market size, competitors, and tech stacks. We do the heavy lifting so you can focus on building.
 *   **🎨 Visualize Instantly**: Generate a brand identity on the fly with AI-powered logo creation, making your idea feel real from the very first moment.
+*   **🤖 Your Personal AI Mentor**: A built-in chat bot is available to help you brainstorm, refine ideas, or answer your entrepreneurial questions at any time.
 
 ---
 
 ## Key Features
 
 *   **🧠 AI-Powered Idea Generation**: Utilizes `gemini-2.5-pro` to create two distinct and detailed SaaS ideas based on user inputs.
+*   **🤔 Thinking Mode**: For users with complex queries, enabling "Thinking Mode" allocates a maximum thinking budget to `gemini-2.5-pro`, allowing for exceptionally deep, nuanced, and strategic idea generation.
 *   **🔍 Real-time Market Validation**: Integrates **Google Search** to ensure ideas are relevant and validated against current market data. All web sources are cited for transparency.
+*   **💬 AI Chat Bot**: A floating chat widget powered by `gemini-2.5-flash` acts as an "AI Mentor," ready to assist with questions, brainstorming, or refining concepts.
+*   **🔊 Text-to-Speech (TTS)**: Each idea card includes a "Read Aloud" feature powered by `gemini-2.5-flash-preview-tts`, making the content more accessible and easier to consume.
 *   **📊 Comprehensive Idea Breakdown**: Each idea includes a wealth of information:
     *   Name & Tagline
     *   In-depth Description
@@ -45,7 +50,7 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
 
 1.  **Step 1: Provide Context**
     *   Navigate to the **Generator** page.
-    *   Fill out the form with your initial thoughts: a problem you've noticed, a core idea, an industry of interest, or a target audience.
+    *   Fill out the form with your initial thoughts. For maximum creativity, enable **Thinking Mode**.
     *   **Crucially, provide a `Web Search Query`**. This is what the AI will use to research and validate the ideas (e.g., *"latest trends in AI developer tools"*).
 
 2.  **Step 2: Generate & Analyze**
@@ -54,13 +59,17 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
     *   Dive deep into each card to analyze every aspect of the business concept.
     *   Scroll down to the **"Powered by Google Search"** section to review the exact web sources the AI used.
 
-3.  **Step 3: Visualize Your Brand**
-    *   On any idea card, click `Generate Logo` to create a visual identity.
-    *   Not quite right? Click `Regenerate`, type in your preferences (e.g., *"more geometric, using green and black"*), and generate a new version.
+3.  **Step 3: Visualize & Listen**
+    *   On any idea card, click `Generate Logo` to create a visual identity. Not quite right? Use the `Regenerate` option with your own prompt.
+    *   Click the **speaker icon** to have the AI read the idea's summary aloud to you.
 
 4.  **Step 4: Save and Manage**
     *   Love an idea? Click the **Bookmark Icon** to save it.
-    *   Navigate to the **Dashboard** page to view and manage all your saved ideas. Your generated logos are saved automatically with the idea.
+    *   Navigate to the **Dashboard** page to view and manage all your saved ideas.
+
+5.  **Step 5: Chat with your AI Mentor**
+    *   Click the floating chat icon in the bottom-right corner at any time to open the chat window.
+    *   Ask for advice, brainstorm new angles, or explore related topics with the help of the AI.
 
 ---
 
@@ -68,6 +77,8 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
 
 *   **Frontend**: React, TypeScript, Tailwind CSS
 *   **AI Models**:
-    *   **Idea Generation & Grounding**: Google Gemini API (`gemini-2.5-pro` with Google Search tool)
+    *   **Idea Generation & Grounding**: Google Gemini API (`gemini-2.5-pro` with Google Search tool and optional Thinking Mode)
+    *   **Chat Bot**: Google Gemini API (`gemini-2.5-flash`)
+    *   **Text-to-Speech**: Google Gemini API (`gemini-2.5-flash-preview-tts`)
     *   **Logo Generation**: Google Gemini API (`imagen-4.0-generate-001`)
 *   **Dependencies**: `uuid` for unique ID generation.

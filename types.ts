@@ -1,3 +1,4 @@
+
 export interface Idea {
   id: string;
   name: string;
@@ -35,6 +36,7 @@ export interface FormState {
   industry: string;
   targetAudience: string;
   searchQuery: string;
+  thinkingMode: boolean;
 }
 
 export interface GroundingSource {
@@ -48,5 +50,12 @@ export interface GroundingSource {
     }[];
   };
 }
+
+export interface ChatMessage {
+    role: 'user' | 'model';
+    parts: string;
+    id: string;
+}
+
 
 export type Page = 'generator' | 'dashboard' | 'pricing';
