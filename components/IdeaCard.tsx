@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Idea } from '../types';
-import { DownloadIcon, Share2Icon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon } from './IconComponents';
+import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon } from './IconComponents';
 
 const ScoreBar: React.FC<{ score: number; max: number; label: string; color: string }> = ({ score, max, label, color }) => (
   <div>
@@ -20,11 +20,17 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     </span>
 );
 
-const ActionButton: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <button className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700/80 border border-neutral-700 transition-colors">
+const ActionButton: React.FC<{ children: React.ReactNode; onClick?: () => void; 'aria-label': string; disabled?: boolean; }> = ({ children, onClick, 'aria-label': ariaLabel, disabled = false }) => (
+  <button 
+    onClick={onClick}
+    aria-label={ariaLabel}
+    disabled={disabled}
+    className="p-2 bg-neutral-800 rounded-lg hover:enabled:bg-neutral-700/80 border border-neutral-700 transition-colors disabled:cursor-not-allowed"
+  >
     {children}
   </button>
 );
+
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; className?: string }> = ({ title, icon, children, className }) => (
   <div className={className}>
@@ -40,9 +46,11 @@ interface IdeaCardProps {
   idea: Idea;
   onGenerateLogo: (ideaId: string) => void;
   isLogoLoading: boolean;
+  onSave?: (idea: Idea) => void;
+  isSaved?: boolean;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading }) => {
+export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading, onSave, isSaved }) => {
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -71,6 +79,24 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
     
     localStorage.setItem(feedbackStorageKey, JSON.stringify(feedbackData));
     setIsSubmitted(true);
+  };
+  
+  const handleShare = (platform: 'twitter' | 'linkedin') => {
+    const text = `Check out this AI-generated SaaS idea: "${idea.name}" - ${idea.tagline}. #SaaS #AI #Startup`;
+    const appUrl = 'https://ladestack.in'; // Using a placeholder URL
+
+    let url = '';
+
+    if (platform === 'twitter') {
+      url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(appUrl)}`;
+    } else if (platform === 'linkedin') {
+      // Using the older shareArticle syntax for better compatibility
+      url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(appUrl)}&title=${encodeURIComponent(`AI SaaS Idea: ${idea.name}`)}&summary=${encodeURIComponent(text)}`;
+    }
+
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -106,8 +132,26 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
           )}
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
-          <ActionButton><Share2Icon className="w-4 h-4 text-neutral-300" /></ActionButton>
-          <ActionButton><DownloadIcon className="w-4 h-4 text-neutral-300" /></ActionButton>
+          <ActionButton onClick={() => handleShare('twitter')} aria-label="Share on Twitter">
+            <TwitterIcon className="w-4 h-4 text-neutral-300" />
+          </ActionButton>
+          <ActionButton onClick={() => handleShare('linkedin')} aria-label="Share on LinkedIn">
+            <LinkedinIcon className="w-4 h-4 text-neutral-300" />
+          </ActionButton>
+           {onSave && (
+            isSaved ? (
+              <ActionButton aria-label="Idea saved" disabled>
+                <CheckIcon className="w-4 h-4 text-green-400" />
+              </ActionButton>
+            ) : (
+              <ActionButton onClick={() => onSave(idea)} aria-label="Save idea">
+                <BookmarkIcon className="w-4 h-4 text-neutral-300" />
+              </ActionButton>
+            )
+          )}
+          <ActionButton aria-label="Download idea">
+            <DownloadIcon className="w-4 h-4 text-neutral-300" />
+          </ActionButton>
         </div>
       </div>
       
@@ -148,31 +192,44 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
               comp && <div key={comp.player} className="bg-neutral-800/30 p-3 rounded-lg border border-neutral-700/50">
                 <h5 className="font-semibold text-neutral-200 text-sm">{comp.player}</h5>
                 
-                {(comp.pricing || comp.marketShare) && (
-                  <div className="mt-1.5 border-t border-neutral-700/50 pt-1.5 flex flex-col gap-1">
-                    {comp.pricing && (
-                      <p className="text-xs text-neutral-400">
-                        <span className="font-medium text-neutral-300">Pricing: </span>{comp.pricing}
-                      </p>
+                {/* Details section, shown only if there's content */}
+                {(comp.pricing || comp.marketShare || (comp.keyDifferentiators && comp.keyDifferentiators.length > 0)) && (
+                  <div className="mt-2 border-t border-neutral-700/50 pt-2 space-y-3">
+                    
+                    {/* Pricing and Market Share */}
+                    {(comp.pricing || comp.marketShare) && (
+                      <div>
+                        <div className="flex flex-col gap-1">
+                          {comp.pricing && (
+                            <p className="text-xs text-neutral-400">
+                              <span className="font-medium text-neutral-300">Pricing: </span>{comp.pricing}
+                            </p>
+                          )}
+                          {comp.marketShare && (
+                            <p className="text-xs text-neutral-400">
+                              <span className="font-medium text-neutral-300">Market Share: </span>{comp.marketShare}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     )}
-                    {comp.marketShare && (
-                      <p className="text-xs text-neutral-400">
-                        <span className="font-medium text-neutral-300">Market Share: </span>{comp.marketShare}
-                      </p>
+                    
+                    {/* Key Differentiators Sub-section */}
+                    {comp.keyDifferentiators && comp.keyDifferentiators.length > 0 && (
+                      <div>
+                        <h6 className="text-xs font-semibold text-neutral-300 mb-1">Key Differentiators:</h6>
+                        <ul className="list-disc list-inside space-y-1 pl-1">
+                        {comp.keyDifferentiators.map((differentiator, index) => (
+                            <li key={index} className="text-xs text-neutral-400 leading-snug">
+                              {differentiator}
+                            </li>
+                        ))}
+                        </ul>
+                      </div>
                     )}
+
                   </div>
                 )}
-                
-                <div className="mt-2">
-                    <h6 className="text-xs font-semibold text-neutral-300 mb-1">Key Differentiators:</h6>
-                    <ul className="list-disc list-inside space-y-1 pl-1">
-                    {comp.keyDifferentiators?.map((differentiator, index) => (
-                        <li key={index} className="text-xs text-neutral-400 leading-snug">
-                          {differentiator}
-                        </li>
-                    ))}
-                    </ul>
-                </div>
               </div>
             ))}
           </div>

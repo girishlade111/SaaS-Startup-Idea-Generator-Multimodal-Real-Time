@@ -1,31 +1,23 @@
 import React from 'react';
 import { IdeaCard } from './IdeaCard';
 import { geminiService } from '../services/geminiService';
-import type { Idea, FormState } from '../types';
+import type { Idea } from '../types';
 
 export const DashboardPage: React.FC = () => {
-  // In a real app, this data would come from a user-specific API call.
-  // We're using a mock service to simulate having saved ideas.
   const [savedIdeas, setSavedIdeas] = React.useState<Idea[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [logoLoadingId, setLogoLoadingId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    // FIX: Provide mock form data to satisfy the function signature for this mock data generation,
-    // and correctly access the `ideas` array from the response object.
-    const mockFormData: FormState = {
-      textInput: 'AI for social media managers',
-      videoFile: null,
-      imageFile: null,
-      industry: 'Social Media Marketing',
-      targetAudience: 'Marketing agencies',
-      searchQuery: 'latest trends in social media marketing tools'
-    };
-    geminiService.generateSaaSIdeas(mockFormData).then(response => {
-      // Simulate having only one saved idea for variety
-      setSavedIdeas(response.ideas.slice(0, 1)); 
-      setIsLoading(false);
-    });
+    try {
+      const ideasFromStorage = localStorage.getItem('savedSaaSIdeas');
+      if (ideasFromStorage) {
+        setSavedIdeas(JSON.parse(ideasFromStorage));
+      }
+    } catch (e) {
+      console.error("Failed to load or parse ideas from localStorage", e);
+    }
+    setIsLoading(false);
   }, []);
 
   const handleGenerateLogo = async (ideaId: string) => {
@@ -35,11 +27,14 @@ export const DashboardPage: React.FC = () => {
       if (!ideaToUpdate) throw new Error("Idea not found");
 
       const newLogoUrl = await geminiService.generateLogo(ideaToUpdate);
-      setSavedIdeas(currentIdeas =>
-        currentIdeas.map(idea =>
-          idea.id === ideaId ? { ...idea, logoIdeaUrl: newLogoUrl } : idea
-        )
+      
+      const updatedIdeas = savedIdeas.map(idea =>
+        idea.id === ideaId ? { ...idea, logoIdeaUrl: newLogoUrl } : idea
       );
+
+      setSavedIdeas(updatedIdeas);
+      localStorage.setItem('savedSaaSIdeas', JSON.stringify(updatedIdeas));
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
       console.error(`Failed to generate logo: ${errorMessage}`);
@@ -60,7 +55,6 @@ export const DashboardPage: React.FC = () => {
       ) : savedIdeas.length > 0 ? (
         <div className="space-y-6">
           {savedIdeas.map(idea => (
-            // FIX: Pass `onGenerateLogo` and `isLogoLoading` props to `IdeaCard` to enable logo generation functionality on the dashboard.
             <IdeaCard 
               key={idea.id} 
               idea={idea} 
