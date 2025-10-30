@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isGenerated, setIsGenerated] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('generator');
+  const [initialChatMessage, setInitialChatMessage] = useState<string | null>(null);
 
   const handleGenerateIdeas = useCallback(async (formData: FormState) => {
     setLastFormData(formData);
@@ -76,6 +77,15 @@ const App: React.FC = () => {
       handleGenerateIdeas(lastFormData);
     }
   };
+  
+  const handleStartChatWithIdea = (idea: Idea) => {
+    const message = `Let's discuss the SaaS idea "${idea.name}". Here is the description: "${idea.description}". What are the first steps I should take to validate this idea?`;
+    setInitialChatMessage(message);
+  };
+
+  const clearInitialChatMessage = () => {
+    setInitialChatMessage(null);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -110,6 +120,7 @@ const App: React.FC = () => {
                         onRetry={handleRetry}
                         onGenerateLogo={handleGenerateLogo}
                         logoLoadingId={logoLoadingId}
+                        onStartChat={handleStartChatWithIdea}
                       />
                   ) : (
                     <div className="h-full min-h-[500px] flex flex-col items-center justify-center bg-neutral-900/50 border border-neutral-800/60 rounded-xl p-8 text-center">
@@ -168,7 +179,10 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      <ChatWidget />
+      <ChatWidget 
+        initialMessage={initialChatMessage}
+        onInitialMessageSent={clearInitialChatMessage}
+      />
     </div>
   );
 };

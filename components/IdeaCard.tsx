@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Idea } from '../types';
 import { geminiService } from '../services/geminiService';
-import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon, Volume2Icon, VolumeXIcon } from './IconComponents';
+import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon, RefreshCwIcon, DollarSignIcon, RocketIcon, ShieldAlertIcon, BriefcaseIcon, Volume2Icon, VolumeXIcon, MessageSquareTextIcon } from './IconComponents';
 
 const ScoreBar: React.FC<{ score: number; max: number; label: string; color: string }> = ({ score, max, label, color }) => (
   <div>
@@ -81,9 +81,10 @@ interface IdeaCardProps {
   isLogoLoading: boolean;
   onSave?: (idea: Idea) => void;
   isSaved?: boolean;
+  onStartChat: (idea: Idea) => void;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading, onSave, isSaved }) => {
+export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogoLoading, onSave, isSaved, onStartChat }) => {
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -269,6 +270,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
           </div>
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
+          <ActionButton onClick={() => onStartChat(idea)} aria-label="Discuss with AI Mentor">
+            <MessageSquareTextIcon className="w-4 h-4 text-neutral-300" />
+          </ActionButton>
           <ActionButton onClick={handleReadAloud} aria-label={isSpeaking ? "Stop reading" : "Read aloud"}>
             {isSpeaking ? <VolumeXIcon className="w-4 h-4 text-red-400" /> : <Volume2Icon className="w-4 h-4 text-neutral-300" />}
           </ActionButton>

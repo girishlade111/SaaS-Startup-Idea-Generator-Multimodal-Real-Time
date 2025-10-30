@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import type { Idea, GroundingSource } from '../types';
 import { IdeaCard } from './IdeaCard';
@@ -12,6 +13,7 @@ interface ResultsDisplayProps {
   onRetry: () => void;
   onGenerateLogo: (ideaId: string) => void;
   logoLoadingId: string | null;
+  onStartChat: (idea: Idea) => void;
 }
 
 const SourcesDisplay: React.FC<{ sources: GroundingSource[] }> = ({ sources }) => {
@@ -87,7 +89,7 @@ const SourcesDisplay: React.FC<{ sources: GroundingSource[] }> = ({ sources }) =
   )
 }
 
-export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ ideas, sources, isLoading, error, onRetry, onGenerateLogo, logoLoadingId }) => {
+export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ ideas, sources, isLoading, error, onRetry, onGenerateLogo, logoLoadingId, onStartChat }) => {
   const [savedIdeas, setSavedIdeas] = useState<Idea[]>(() => {
     try {
       const saved = localStorage.getItem('savedSaaSIdeas');
@@ -180,6 +182,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ ideas, sources, 
             isLogoLoading={logoLoadingId === idea.id}
             onSave={handleSaveIdea}
             isSaved={savedIdeaIds.has(idea.id)}
+            onStartChat={onStartChat}
           />
         ))}
       </div>

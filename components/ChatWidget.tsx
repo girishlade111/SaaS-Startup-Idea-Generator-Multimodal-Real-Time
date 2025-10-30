@@ -1,11 +1,16 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, Chat } from "@google/genai";
 import { v4 as uuidv4 } from 'uuid';
 import type { ChatMessage } from '../types';
 import { MessageCircleIcon, XIcon, SendIcon, BotIcon } from './IconComponents';
 
-export const ChatWidget: React.FC = () => {
+interface ChatWidgetProps {
+    initialMessage: string | null;
+    onInitialMessageSent: () => void;
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ initialMessage, onInitialMessageSent }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [input, setInput] = useState('');
@@ -13,30 +18,71 @@ export const ChatWidget: React.FC = () => {
     const chatContainerRef = useRef<HTMLDivElement>(null);
     
     const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
-    const chat = useMemo(() => ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-            systemInstruction: 'You are a friendly and encouraging AI mentor for SaaS startup founders. Keep your answers concise, helpful, and focused on entrepreneurship, technology, and business strategy. Start the conversation with a welcoming message.',
-        },
-    }), [ai]);
+    const chatRef = useRef<Chat | null>(null);
 
-    useEffect(() => {
-        // Start with a greeting from the model
-        if (isOpen && messages.length === 0) {
-            setIsLoading(true);
-            chat.sendMessage({ message: "Hello" }).then(response => {
-                setMessages([{
-                    id: uuidv4(),
-                    role: 'model',
-                    parts: response.text
-                }]);
-                setIsLoading(false);
-            }).catch(err => {
-                 console.error("Failed to start chat:", err);
-                 setIsLoading(false);
+    // Gets or creates a chat session. Can be forced to create a new one.
+    const getChat = (forceNew: boolean = false): Chat => {
+        if (forceNew || !chatRef.current) {
+            chatRef.current = ai.chats.create({
+                model: 'gemini-2.5-flash',
+                config: {
+                    systemInstruction: 'You are a friendly and encouraging AI mentor for SaaS startup founders. Keep your answers concise, helpful, and focused on entrepreneurship, technology, and business strategy. Start the conversation with a welcoming message.',
+                },
             });
         }
-    }, [isOpen]);
+        return chatRef.current;
+    };
+
+    // Effect to handle starting a conversation from an Idea Card
+    useEffect(() => {
+        if (initialMessage) {
+            setIsOpen(true);
+            
+            const currentChat = getChat(true); // Force a new chat session for a clean context
+            const userMessage: ChatMessage = { id: uuidv4(), role: 'user', parts: initialMessage };
+            const modelMessageId = uuidv4();
+            
+            setMessages([userMessage, { id: modelMessageId, role: 'model', parts: '' }]);
+            setInput('');
+            setIsLoading(true);
+
+            const send = async () => {
+                try {
+                    const stream = await currentChat.sendMessageStream({ message: initialMessage });
+                    for await (const chunk of stream) {
+                        setMessages(prev => prev.map(msg =>
+                            msg.id === modelMessageId ? { ...msg, parts: msg.parts + chunk.text } : msg
+                        ));
+                    }
+                } catch (error) {
+                    console.error("Chat error from initial message:", error);
+                     setMessages(prev => prev.map(msg =>
+                        msg.id === modelMessageId ? { ...msg, parts: "Sorry, I ran into an issue. Please try again." } : msg
+                    ));
+                } finally {
+                    setIsLoading(false);
+                    onInitialMessageSent();
+                }
+            };
+            send();
+        }
+    }, [initialMessage]);
+
+
+    // Effect for the initial greeting when opened manually
+    useEffect(() => {
+        if (isOpen && messages.length === 0 && !isLoading) {
+            setIsLoading(true);
+            const currentChat = getChat();
+            currentChat.sendMessage({ message: "Hello" }).then(response => {
+                setMessages([{ id: uuidv4(), role: 'model', parts: response.text }]);
+            }).catch(err => {
+                 console.error("Failed to start chat:", err);
+            }).finally(() => {
+                setIsLoading(false);
+            });
+        }
+    }, [isOpen, messages.length, isLoading]);
 
     useEffect(() => {
         // Scroll to the bottom of the chat container when new messages are added
@@ -49,17 +95,17 @@ export const ChatWidget: React.FC = () => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
 
+        const currentChat = getChat();
         const userMessage: ChatMessage = { id: uuidv4(), role: 'user', parts: input };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         const modelMessageId = uuidv4();
-        // Add a placeholder for the model's response
         setMessages(prev => [...prev, { id: modelMessageId, role: 'model', parts: '' }]);
 
         try {
-            const stream = await chat.sendMessageStream({ message: input });
+            const stream = await currentChat.sendMessageStream({ message: input });
 
             for await (const chunk of stream) {
                 setMessages(prev => prev.map(msg => 
