@@ -20,13 +20,13 @@ export const DashboardPage: React.FC = () => {
     setIsLoading(false);
   }, []);
 
-  const handleGenerateLogo = async (ideaId: string) => {
+  const handleGenerateLogo = async (ideaId: string, prompt?: string) => {
     setLogoLoadingId(ideaId);
     try {
       const ideaToUpdate = savedIdeas.find(i => i.id === ideaId);
       if (!ideaToUpdate) throw new Error("Idea not found");
 
-      const newLogoUrl = await geminiService.generateLogo(ideaToUpdate);
+      const newLogoUrl = await geminiService.generateLogo(ideaToUpdate, prompt);
       
       const updatedIdeas = savedIdeas.map(idea =>
         idea.id === ideaId ? { ...idea, logoIdeaUrl: newLogoUrl } : idea

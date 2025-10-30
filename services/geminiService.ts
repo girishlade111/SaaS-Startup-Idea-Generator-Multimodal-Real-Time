@@ -117,13 +117,17 @@ export const geminiService = {
     }
   },
 
-  generateLogo: async (idea: Idea): Promise<string> => {
-    const prompt = `
+  generateLogo: async (idea: Idea, userPrompt?: string): Promise<string> => {
+    let prompt = `
       A modern, minimalist logo for a SaaS startup called '${idea.name}'.
       The company's focus is: '${idea.description}'.
       The logo should be simple, memorable, and suitable for a tech company.
       Style: vector, flat design, single color on a dark background.
     `;
+
+    if (userPrompt) {
+      prompt += `\n\nUser guidance for regeneration: "${userPrompt}"`;
+    }
 
     try {
       const response = await ai.models.generateImages({

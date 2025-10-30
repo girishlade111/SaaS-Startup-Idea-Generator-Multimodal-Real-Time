@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Idea } from '../types';
-import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon } from './IconComponents';
+import { DownloadIcon, StarIcon, TargetIcon, CheckCircleIcon, ThumbsUpIcon, ThumbsDownIcon, Wand2Icon, TwitterIcon, LinkedinIcon, BookmarkIcon, CheckIcon, RefreshCwIcon } from './IconComponents';
 
 const ScoreBar: React.FC<{ score: number; max: number; label: string; color: string }> = ({ score, max, label, color }) => (
   <div>
@@ -44,7 +44,7 @@ const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.
 
 interface IdeaCardProps {
   idea: Idea;
-  onGenerateLogo: (ideaId: string) => void;
+  onGenerateLogo: (ideaId: string, prompt?: string) => void;
   isLogoLoading: boolean;
   onSave?: (idea: Idea) => void;
   isSaved?: boolean;
@@ -54,6 +54,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regeneratePrompt, setRegeneratePrompt] = useState('');
 
   const feedbackStorageKey = `feedback_${idea.id}`;
   const hasGeneratedLogo = idea.logoIdeaUrl && idea.logoIdeaUrl.startsWith('data:image');
@@ -79,6 +81,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
     
     localStorage.setItem(feedbackStorageKey, JSON.stringify(feedbackData));
     setIsSubmitted(true);
+  };
+
+  const handleRegenerateSubmit = () => {
+    onGenerateLogo(idea.id, regeneratePrompt);
+    setIsRegenerating(false);
+    setRegeneratePrompt('');
   };
   
   const handleShare = (platform: 'twitter' | 'linkedin') => {
@@ -108,11 +116,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
         <div className="flex-1">
           <h3 className="text-2xl font-bold text-neutral-100">{idea.name}</h3>
           <p className="text-brand-light font-medium">{idea.tagline}</p>
-          {!hasGeneratedLogo && (
+          <div className="mt-3">
+            {!hasGeneratedLogo ? (
               <button 
                 onClick={() => onGenerateLogo(idea.id)} 
                 disabled={isLogoLoading}
-                className="mt-3 flex items-center gap-2 text-sm font-semibold bg-neutral-800 text-neutral-200 px-3 py-1.5 rounded-md border border-neutral-700 hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                className="flex items-center gap-2 text-sm font-semibold bg-neutral-800 text-neutral-200 px-3 py-1.5 rounded-md border border-neutral-700 hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-wait"
               >
                 {isLogoLoading ? (
                   <>
@@ -129,7 +138,49 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
                   </>
                 )}
               </button>
-          )}
+            ) : !isRegenerating ? (
+              <button 
+                onClick={() => setIsRegenerating(true)} 
+                disabled={isLogoLoading}
+                className="flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-neutral-200 transition-colors disabled:opacity-50"
+              >
+                <RefreshCwIcon className="w-3 h-3" />
+                Regenerate
+              </button>
+            ) : (
+              <div className="space-y-2 animate-[fadeIn_0.3s_ease-in-out] max-w-sm">
+                <input
+                  type="text"
+                  value={regeneratePrompt}
+                  onChange={(e) => setRegeneratePrompt(e.target.value)}
+                  placeholder="e.g., 'blue color, abstract style'"
+                  className="w-full bg-neutral-800/80 border border-neutral-700 rounded-md px-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:ring-1 focus:ring-brand focus:border-brand outline-none transition-all"
+                  aria-label="Logo regeneration prompt"
+                />
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handleRegenerateSubmit} 
+                    disabled={isLogoLoading}
+                    className="flex items-center justify-center text-xs font-semibold bg-brand text-white px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-wait w-28"
+                  >
+                    {isLogoLoading ? (
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : 'Generate New'}
+                  </button>
+                  <button 
+                    onClick={() => setIsRegenerating(false)} 
+                    disabled={isLogoLoading}
+                    className="text-xs font-semibold text-neutral-300 px-3 py-1.5 rounded-md hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2 self-start md:self-center">
           <ActionButton onClick={() => handleShare('twitter')} aria-label="Share on Twitter">

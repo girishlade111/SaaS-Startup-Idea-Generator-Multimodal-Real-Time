@@ -44,13 +44,13 @@ const App: React.FC = () => {
     }
   }, []);
   
-  const handleGenerateLogo = async (ideaId: string) => {
+  const handleGenerateLogo = async (ideaId: string, prompt?: string) => {
     setLogoLoadingId(ideaId);
     try {
       const ideaToUpdate = ideas.find(i => i.id === ideaId);
       if (!ideaToUpdate) throw new Error("Idea not found");
 
-      const newLogoUrl = await geminiService.generateLogo(ideaToUpdate);
+      const newLogoUrl = await geminiService.generateLogo(ideaToUpdate, prompt);
       setIdeas(currentIdeas =>
         currentIdeas.map(idea =>
           idea.id === ideaId ? { ...idea, logoIdeaUrl: newLogoUrl } : idea
