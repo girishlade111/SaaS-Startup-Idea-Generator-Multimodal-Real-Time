@@ -1,5 +1,7 @@
 {
   "name": "SaaS Startup Idea Generator",
   "description": "An AI-powered idea generation and validation engine for SaaS entrepreneurs. It uses multimodal inputs (text, video, image) and live web signals to generate validated, data-driven SaaS startup ideas.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

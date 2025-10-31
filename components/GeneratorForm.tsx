@@ -1,8 +1,7 @@
-
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import type { FormState } from '../types';
-import { SparklesIcon, VideoIcon, ImageIcon, RefreshCwIcon, BrainCircuitIcon } from './IconComponents';
+import { SparklesIcon, VideoIcon, ImageIcon, RefreshCwIcon, BrainCircuitIcon, MicrophoneIcon } from './IconComponents';
 
 interface GeneratorFormProps {
   onSubmit: (formData: FormState) => void;
@@ -52,6 +51,56 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
   const [searchQuery, setSearchQuery] = useState('');
   const [thinkingMode, setThinkingMode] = useState(false);
   const [errors, setErrors] = useState<{ searchQuery?: string }>({});
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    // FIX: Cast window to `any` to access experimental SpeechRecognition APIs without TypeScript errors.
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      setIsSpeechRecognitionSupported(true);
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          setTextInput(prev => (prev.trim() ? prev.trim() + ' ' : '') + finalTranscript.trim());
+        }
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const handleToggleListening = () => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
 
   const validateForm = () => {
     const newErrors: { searchQuery?: string } = {};
@@ -82,14 +131,26 @@ export const GeneratorForm: React.FC<GeneratorFormProps> = ({ onSubmit, isLoadin
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
           <label htmlFor="text-input" className="block text-sm font-medium text-neutral-300 mb-1.5">Text Input</label>
-          <textarea
-            id="text-input"
-            rows={4}
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            placeholder="Describe a problem, a pain point, or a core idea..."
-            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
-          ></textarea>
+          <div className="relative">
+            <textarea
+              id="text-input"
+              rows={4}
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder="Describe a problem, a pain point, or a core idea..."
+              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all pr-10"
+            ></textarea>
+            {isSpeechRecognitionSupported && (
+              <button
+                type="button"
+                onClick={handleToggleListening}
+                className={`absolute top-2.5 right-2.5 p-1 rounded-full transition-colors ${isListening ? 'text-brand animate-pulse' : 'text-neutral-400 hover:text-neutral-100'}`}
+                aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                <MicrophoneIcon className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

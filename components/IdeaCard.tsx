@@ -303,8 +303,18 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onGenerateLogo, isLogo
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4 bg-neutral-800/30 p-4 rounded-lg border border-neutral-700/60">
-           <ScoreBar score={idea.marketValidationScore} max={100} label="Market Validation" color="text-green-400" />
-           <ScoreBar score={idea.feasibilityScore} max={10} label="Feasibility Score" color="text-sky-400" />
+            <div>
+                <ScoreBar score={idea.marketValidationScore} max={100} label="Market Validation" color="text-green-400" />
+                {idea.marketValidationRationale && (
+                    <p className="text-xs text-neutral-400 mt-1.5 pl-1 italic">"{idea.marketValidationRationale}"</p>
+                )}
+            </div>
+            <div>
+                <ScoreBar score={idea.feasibilityScore} max={10} label="Feasibility Score" color="text-sky-400" />
+                {idea.feasibilityRationale && (
+                    <p className="text-xs text-neutral-400 mt-1.5 pl-1 italic">"{idea.feasibilityRationale}"</p>
+                )}
+            </div>
         </div>
 
         <div className="bg-neutral-800/30 p-4 rounded-lg border border-neutral-700/60">

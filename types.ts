@@ -17,7 +17,9 @@ export interface Idea {
     keyDifferentiators: string[];
   }[];
   feasibilityScore: number;
+  feasibilityRationale: string;
   marketValidationScore: number;
+  marketValidationRationale: string;
   launchStrategy: string[];
   logoIdeaUrl?: string;
   potentialRisks: {

@@ -45,7 +45,9 @@ const ideaSchema = {
       description: "Analysis of 1-2 key competitors, including their pricing, market share, and key differentiators, based on web search results."
     },
     feasibilityScore: { type: Type.NUMBER, description: "A score from 1-10 on technical feasibility." },
+    feasibilityRationale: { type: Type.STRING, description: "A brief explanation for the feasibility score, based on tech stack complexity and required resources." },
     marketValidationScore: { type: Type.NUMBER, description: "A score from 1-100 on market need and viability, based on search results." },
+    marketValidationRationale: { type: Type.STRING, description: "A brief explanation for the market validation score, referencing specific insights from the web search results." },
     launchStrategy: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
@@ -66,7 +68,8 @@ const ideaSchema = {
   },
    required: [
     'name', 'tagline', 'description', 'targetProblem', 'marketSize', 'coreFeatures', 'techStack',
-    'revenueModel', 'pricingStrategy', 'competitiveLandscape', 'feasibilityScore', 'marketValidationScore', 'launchStrategy', 'potentialRisks'
+    'revenueModel', 'pricingStrategy', 'competitiveLandscape', 'feasibilityScore', 'feasibilityRationale', 
+    'marketValidationScore', 'marketValidationRationale', 'launchStrategy', 'potentialRisks'
   ]
 };
 
@@ -85,7 +88,19 @@ export const geminiService = {
       - Web Search Query for Grounding: ${formData.searchQuery}
 
       For each idea, provide a detailed breakdown.
-      Ensure the 'marketValidationScore' and 'feasibilityScore' are realistically informed by the search results.
+
+      Crucially, the 'marketValidationScore' and 'feasibilityScore' must be dynamically calculated based on a clear rationale derived from the search results and user inputs. You must provide a justification for each score in the 'marketValidationRationale' and 'feasibilityRationale' fields.
+
+      - **Market Validation Score (1-100) & Rationale:** This score reflects market need.
+        - **High Score Factors:** Search results showing a growing trend, high user demand in forums/articles, a clear market gap, or a strong problem statement from the user.
+        - **Low Score Factors:** Saturated market with dominant players, low search interest for the problem, or a solution looking for a problem.
+        - **Rationale:** Your explanation MUST reference specific insights from the search results (e.g., "Score is high because search results show a 20% year-over-year growth in this market...").
+
+      - **Feasibility Score (1-10) & Rationale:** This score reflects technical difficulty for a startup.
+        - **High Score Factors:** Utilizes a common tech stack, core features are achievable for a small team, leverages existing APIs.
+        - **Low Score Factors:** Requires novel/unproven technology, significant hardware costs, or extremely complex features.
+        - **Rationale:** Justify the score based on the proposed tech stack and feature complexity.
+
       For the 'competitiveLandscape', analyze 1-2 key competitors found via search. For each competitor, provide their pricing model (e.g., '$29/mo', 'Freemium'), estimated market share if available, and a list of their key differentiators. This information should directly inform the analysis.
       For 'potentialRisks', identify 1-2 potential risks (e.g., market adoption, technical challenges, competition) and suggest a corresponding mitigation strategy for each.
       Finally, suggest a funding strategy:
