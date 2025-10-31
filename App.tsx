@@ -5,6 +5,7 @@ import { GeneratorForm } from './components/GeneratorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { DashboardPage } from './components/DashboardPage';
 import { PricingPage } from './components/PricingPage';
+import { AboutPage } from './components/AboutPage';
 import { ChatWidget } from './components/ChatWidget';
 import { geminiService } from './services/geminiService';
 import type { Idea, FormState, Page, GroundingSource } from './types';
@@ -93,6 +94,8 @@ const App: React.FC = () => {
         return <DashboardPage />;
       case 'pricing':
         return <PricingPage />;
+      case 'about':
+        return <AboutPage onNavigate={setCurrentPage} />;
       case 'generator':
       default:
         return (

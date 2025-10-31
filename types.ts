@@ -58,4 +58,4 @@ export interface ChatMessage {
 }
 
 
-export type Page = 'generator' | 'dashboard' | 'pricing';
+export type Page = 'generator' | 'dashboard' | 'pricing' | 'about';

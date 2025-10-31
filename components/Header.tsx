@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BotMessageSquareIcon } from './IconComponents';
 import type { Page } from '../types';
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage, onNavigate }) => {
           <a onClick={() => onNavigate('generator')} className={navLinkClasses('generator')}>Generator</a>
           <a onClick={() => onNavigate('dashboard')} className={navLinkClasses('dashboard')}>Dashboard</a>
           <a onClick={() => onNavigate('pricing')} className={navLinkClasses('pricing')}>Pricing</a>
+          <a onClick={() => onNavigate('about')} className={navLinkClasses('about')}>About</a>
         </nav>
         <button className="px-4 py-2 text-sm font-semibold bg-neutral-50 text-neutral-950 rounded-lg hover:bg-neutral-200 transition-colors">
           Sign In

@@ -71,6 +71,9 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
     *   Click the floating chat icon in the bottom-right corner at any time to open the chat window.
     *   Ask for advice, brainstorm new angles, or explore related topics with the help of the AI.
 
+6.  **Step 6: Learn More**
+    *   Navigate to the **About** page to learn more about the mission, technology, and creator behind the platform.
+
 ---
 
 ## 🛠️ Tech Stack
