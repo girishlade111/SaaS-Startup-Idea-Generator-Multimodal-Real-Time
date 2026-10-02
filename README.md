@@ -85,3 +85,7 @@ This isn't just another idea generator. It's a strategic co-pilot for your entre
     *   **Text-to-Speech**: Google Gemini API (`gemini-2.5-flash-preview-tts`)
     *   **Logo Generation**: Google Gemini API (`imagen-4.0-generate-001`)
 *   **Dependencies**: `uuid` for unique ID generation.
+
+---
+
+Built by [Girish Lade](https://ladestack.in) · https://ladestack.in
